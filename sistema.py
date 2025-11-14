@@ -23,6 +23,14 @@ class Tarefa:
         self.status = novo_status
     
     def __str__(self):
+        prazo_formatado = None
+        if self.prazo:
+            try:
+                ano, mes, dia = self.prazo.split('-')
+                prazo_formatado = f'{dia}/{mes}/{ano}'
+            except:
+                prazo_formatado = self.prazo    
+
         return f"Tarefa {self.id}: {self.descricao} | Data de emissão: {self.data_pedido} | Nome do cliente: {self.cliente} | Prazo: {self.prazo} | Status: {self.status} | Valor do pedido : R${self.valor:.2f}"
     
 class GerenciadorDeTarefas:
@@ -83,13 +91,26 @@ class GerenciadorDeTarefas:
         alertas = []
 
         for tarefa in tarefas:
-            id, descricao, cliente, data_pedido, prazo_str, status, valor = tarefa
-            prazo = datetime.datetime.strptime(prazo_str, "%Y-%m-%d").date()
+            id, descricao, cliente, data_pedido, status, prazo_str, valor = tarefa
+            if not prazo_str:
+                continue
+            try:
+                prazo = datetime.datetime.strptime(prazo_str, "%Y-%m-%d").date()
+            except ValueError:
+                print(f'⚠️ Prazo inválido na tarefa {id}: {prazo_str}')
+                continue
 
-            if status.lower() != "concluído":
-                if prazo < hoje:
-                    alertas.append((id,descricao, prazo_str, "❌ Vencido ❌"))
-                elif(prazo - hoje).days <= proximos_dias:
-                    alertas.append((id, descricao, prazo_str, "⚠️ Prazo próximo ⚠️"))
+            if status.lower() == "concluído":
+                continue
+
+            if prazo < hoje:
+                ano, mes, dia = prazo_str.split('-')
+                prazo_formatado = f'{dia}/{mes}/{ano}'
+                alertas.append((id, descricao, prazo_formatado, "❌ Vencido ❌"))
+
+            elif(prazo - hoje).days <= proximos_dias:
+                ano, mes, dia = prazo_str.split('-')
+                prazo_formatado = f'{dia}/{mes}/{ano}'
+                alertas.append((id, descricao, prazo_str, "⚠️ Prazo próximo ⚠️"))
             
         return alertas
