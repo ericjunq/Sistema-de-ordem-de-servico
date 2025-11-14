@@ -14,7 +14,16 @@ def main():
             case "1":
                 descricao = input("Descrição da tarefa: ")
                 cliente = input("Insira o nome do solicitante/cliente da tarefa: ")
-                prazo = input("Se houver prazo para conclusão da tarefa, indique aqui (Ano/Mês/Dia), se não, deixe vazio: ") or None
+                prazo_input = input("Se houver prazo para conclusão da tarefa, indique aqui (dd/mm/aaaa), se não, deixe vazio: ").strip()
+                if prazo_input:
+                    try:
+                        dia, mes, ano = prazo_input.split('/')
+                        prazo = f'{ano}-{mes}-{dia}'
+                    except ValueError:
+                        print('⚠️Formato inválido! Use o formato dd/mm/aaaa ⚠️')
+                        continue
+                else:
+                    prazo = None
 
                 print("Digite o status da tarefa:\n1. Concluído\n2. Em andamento\n3. Pendente ")
                 escolha_status = input().strip()
@@ -99,7 +108,7 @@ def main():
                 dias_vencimento = int(input().strip())
                 alertas = gerenciador.verificador_prazos(proximos_dias=dias_vencimento)
                 if not alertas:
-                    print(f"✅ Nenhuma tarefa para ser entregue nos próximos {dias_vencimento} ✅")
+                    print(f"✅ Nenhuma tarefa para ser entregue nos próximos {dias_vencimento} dias! ✅")
                 else:
                     print("\n--- ALERTAS DE PRAZO ---")
                     for alerta in alertas:
